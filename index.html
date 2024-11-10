@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>ملخص المباراة</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            margin: 0;
+            background-color: #f0f8ff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #b0c4de;
+            border-radius: 8px;
+            background-color: #fff;
+            transition: opacity 5s ease; /* تأثير التلاشي التدريجي */
+            caret-color: transparent; /* إخفاء مؤشر الكتابة */
+        }
+        input[type="text"].fade-out {
+            opacity: 0;
+        }
+        .result-container {
+            display: flex;
+            align-items: flex-start;
+            background-color: #f0f8ff;
+            border: 1px solid #b0c4de;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .link-box {
+            background-color: #e6f0fa;
+            border-right: 1px solid #b0c4de;
+            padding: 20px;
+            width: 40%; /* زيادة عرض مربع الروابط */
+            font-size: 12px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .link-text {
+            margin-bottom: 15px;
+        }
+        .tweet-box {
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+            width: 60%; /* تقليل عرض مربع التغريدة */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ملخص المباراة</h1>
+        <div class="input-group">
+            <input type="text" id="twitterUrl" placeholder="أدخل رابط تغريدة تويتر">
+        </div>
+
+        <div class="result-container" id="resultContainer" style="display: none;">
+            <div class="link-box" id="linkBox">
+                <p class="link-text" id="linkTextEn"></p>
+                <p class="link-text" id="linkTextAr"></p>
+                <p class="link-text" id="linkTextEs"></p>
+                <p class="link-text" id="linkTextFr"></p>
+            </div>
+            <div class="tweet-box" id="tweetBox">
+                <!-- سيتم عرض تضمين التغريدة هنا -->
+            </div>
+        </div>
+    </div>
+
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <script>
+        document.getElementById('twitterUrl').addEventListener('input', function() {
+            const urlInput = document.getElementById('twitterUrl');
+            const url = urlInput.value.trim();
+            if (url !== '') {
+                displayTweet(url);
+
+                // بدء التلاشي فورًا عند إضافة الرابط
+                urlInput.classList.add('fade-out'); // إضافة فئة التلاشي مباشرة
+
+                // إعادة تعيين حقل الإدخال بعد انتهاء تأثير التلاشي
+                setTimeout(() => {
+                    urlInput.value = ''; // إفراغ حقل الإدخال
+                    urlInput.classList.remove('fade-out'); // إزالة فئة التلاشي
+                }, 2000); // 50 مللي ثانية = 5 ثوانٍ للتلاشي
+            }
+        });
+
+        function displayTweet(tweetUrl) {
+            document.getElementById('linkTextEn').textContent = tweetUrl;
+            document.getElementById('linkTextAr').textContent = tweetUrl;
+            document.getElementById('linkTextEs').textContent = tweetUrl;
+            document.getElementById('linkTextFr').textContent = tweetUrl;
+
+            document.getElementById('resultContainer').style.display = 'flex';
+            embedTweet(tweetUrl);
+        }
+
+        function embedTweet(tweetUrl) {
+            const tweetBox = document.getElementById('tweetBox');
+            tweetBox.innerHTML = ''; // مسح المحتوى السابق
+
+            // استخراج معرف التغريدة من الرابط
+            const tweetIdMatch = tweetUrl.match(/status\/(\d+)/);
+            if (tweetIdMatch && tweetIdMatch[1]) {
+                const tweetId = tweetIdMatch[1];
+
+                // استخدام مكتبة Twitter لتضمين التغريدة
+                twttr.widgets.createTweet(
+                    tweetId,
+                    tweetBox,
+                    {
+                        lang: 'ar'
+                    }
+                ).then(function (el) {
+                    console.log("تغريدة تم تضمينها بنجاح.");
+                }).catch(function (error) {
+                    console.error("خطأ في تضمين التغريدة:", error);
+                    alert("لم يتم تضمين التغريدة. تأكد من صحة الرابط.");
+                });
+            } else {
+                alert("رابط التغريدة غير صالح. يرجى إدخال رابط صحيح.");
+            }
+        }
+    </script>
+
+</body>
+</html>
